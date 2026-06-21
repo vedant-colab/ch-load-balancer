@@ -8,12 +8,19 @@ import (
 )
 
 type Config struct {
-	Server ServerConfig `yaml:"server"`
+	Server   ServerConfig    `yaml:"server"`
+	Backends []BackEndConfig `yaml:"backends"`
 }
 
 type ServerConfig struct {
 	Port        int    `yaml:"port"`
 	Environment string `yaml:"environment"`
+}
+
+type BackEndConfig struct {
+	Id   int    `yaml:"id"`
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 func LoadConfig(log *zerolog.Logger) *Config {
