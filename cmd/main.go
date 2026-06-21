@@ -5,12 +5,14 @@ import (
 	"strconv"
 
 	"github.com/ch-load-balancer/internal/config"
+	"github.com/ch-load-balancer/internal/hashring"
 	pkg "github.com/ch-load-balancer/pkg"
 )
 
 func main() {
 	log := pkg.LoadLogger()
 	cfg := config.LoadConfig(log)
+	hashring.NewHashRing(cfg, log)
 
 	log.Info().Msg("Config loaded")
 
