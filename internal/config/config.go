@@ -8,17 +8,22 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig    `yaml:"server"`
-	Backends []BackEndConfig `yaml:"backends"`
+	Server       ServerConfig    `yaml:"server"`
+	Backends     []BackEndConfig `yaml:"backends"`
+	VirtualNodes VirtualConfig   `yaml:"virtual_nodes"`
 }
 
 type ServerConfig struct {
-	Port        int    `yaml:"port"`
-	Environment string `yaml:"environment"`
+	Port int `yaml:"port"`
+	// Environment string `yaml:"environment"`
+}
+
+type VirtualConfig struct {
+	Total int `yaml:"total"`
 }
 
 type BackEndConfig struct {
-	Id   int    `yaml:"id"`
+	Id   string `yaml:"id"`
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
 }

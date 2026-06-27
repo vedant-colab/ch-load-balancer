@@ -1,6 +1,7 @@
 package hashring
 
 import (
+	"fmt"
 	"slices"
 	"strconv"
 
@@ -10,7 +11,7 @@ import (
 )
 
 type Server struct {
-	ID   int
+	ID   string
 	Host string
 	Port int
 }
@@ -26,22 +27,36 @@ func NewHashRing(cfg *config.Config, log *zerolog.Logger) *HashRing {
 		HashToNode: make(map[uint64]*Server),
 	}
 
+	VirtualNodes := cfg.VirtualNodes.Total
+
 	for _, backend := range cfg.Backends {
 		server := &Server{
 			ID:   backend.Id,
 			Host: backend.Host,
 			Port: backend.Port,
 		}
+		for i := range VirtualNodes {
+			hash_key := server.Host + ":" + strconv.Itoa(server.Port) + "#" + strconv.Itoa(i+1)
+			hash := hashing.MurmurHash3Func(
+				hash_key,
+				0,
+			)
+			// fmt.Println(hash_key, hash)
 
-		hash := hashing.Fnv1aHashFunc(
-			server.Host + ":" + strconv.Itoa(server.Port),
-		)
+			ring.Hashes = append(ring.Hashes, hash)
+			ring.HashToNode[hash] = server
+		}
 
-		ring.Hashes = append(ring.Hashes, hash)
-		ring.HashToNode[hash] = server
 	}
 
 	slices.Sort(ring.Hashes)
+	// for _, hash := range ring.Hashes {
+	// 	svr, ok := ring.HashToNode[hash]
+	// 	if !ok {
+	// 		continue
+	// 	}
+	// 	fmt.Printf("svr: %v with Hash: %d\n", svr.Host+strconv.Itoa(svr.Port), hash)
+	// }
 
 	log.Info().Msgf(
 		"Loaded %d servers into hash ring",
@@ -53,8 +68,8 @@ func NewHashRing(cfg *config.Config, log *zerolog.Logger) *HashRing {
 }
 
 func (ring *HashRing) Lookup(userid string) Server {
-	userIdHash := hashing.Fnv1aHashFunc(userid)
-
+	userIdHash := hashing.MurmurHash3Func(userid, 0)
+	fmt.Printf("user-id hash: %d", userIdHash)
 	l := 0
 	r := len(ring.Hashes) - 1
 
